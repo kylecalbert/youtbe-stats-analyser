@@ -1,11 +1,12 @@
 import googleapiclient.discovery
+import pandas as pd 
+from api_keys import YOUTUBE_API_KEY
 
-api_key = "AIzaSyAE_OqRS9NzqQLhC37Lf8nxxUppbpBuufw"
 api_service_name = "youtube"
 api_version = "v3"
 
 youtube = googleapiclient.discovery.build(
-    api_service_name, api_version, developerKey=api_key
+    api_service_name, api_version, developerKey=YOUTUBE_API_KEY
 )
 
 def get_playlist_ids(youtube, channel_names):
@@ -40,8 +41,9 @@ def get_video_ids(youtube, playlist_ids):
     return all_video_ids
 
 def get_video_stats(youtube, all_video_ids):
+    video_info  = []
+
     for channel_name, video_ids in all_video_ids.items(): # Loop through each channel and its video IDs
-        print(f"Video Stats for {channel_name}:")
         for video_id in video_ids[:5]: # Loop through the first 5 video IDs
             request = youtube.videos().list(
                 part="snippet,contentDetails,statistics",
@@ -49,18 +51,26 @@ def get_video_stats(youtube, all_video_ids):
             )
             response = request.execute()
             if response['items']:
+                
                 video_data = response['items'][0]
                 title = video_data['snippet']['title']
                 views = video_data['statistics']['viewCount']
                 likes = video_data['statistics'].get('likeCount', 0)
                 dislikes = video_data['statistics'].get('dislikeCount', 0)
-                print(f"Title: {title}")
-                print(f"Views: {views}")
-                print(f"Likes: {likes}")
-                print(f"Dislikes: {dislikes}")
-                print()
+
+                video_info.append({
+                    "Channel": channel_name,
+                    "Title": title,
+                    "Views": views,
+                    "Likes": likes,
+                    "Dislikes": dislikes
+                })
             else:
                 print(f"Video with ID {video_id} not found")
+    
+    # print(video_info)
+    df = pd.DataFrame(video_info)
+    return df
 
 def main():
     channel_names_input = input("Enter the YouTube channel names separated by commas: ")
@@ -71,9 +81,9 @@ def main():
     all_video_ids = get_video_ids(youtube, playlist_ids)
 
     get_video_stats(youtube, all_video_ids)
-    # print("Video IDs:")
-    # for channel_name, ids in video_ids.items():
-    #     print(f"{channel_name}: {', '.join(ids)}")
+    df = get_video_stats(youtube, all_video_ids)
+    print(df)
+
 
 if __name__ == "__main__":
     main()
