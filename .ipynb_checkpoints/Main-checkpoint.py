@@ -3,13 +3,13 @@ import googleapiclient.errors
 import pandas as pd
 from googleapiclient.discovery import build
 from IPython.display import JSON    
+from api_keys import YOUTUBE_API_KEY
 
-api_key = "AIzaSyAE_OqRS9NzqQLhC37Lf8nxxUppbpBuufw"
 api_service_name = "youtube"
 api_version = "v3"
 
 youtube = googleapiclient.discovery.build(
-    api_service_name, api_version, developerKey=api_key)
+    api_service_name, api_version, developerKey=YOUTUBE_API_KEY)
 
 
 
