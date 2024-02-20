@@ -2,6 +2,7 @@ import googleapiclient.discovery
 import pandas as pd 
 from api_keys import YOUTUBE_API_KEY
 
+
 def build_youtube_service(api_key):
     """
     Builds and returns a YouTube API service object.
@@ -37,10 +38,15 @@ def get_video_ids(youtube, playlist_ids):
         request = youtube.playlistItems().list(
             part="contentDetails",
             playlistId=playlist_id,
-            maxResults=50
+            maxResults=5,
         )
         response = request.execute()
-        video_ids[channel_name] = [item['contentDetails']['videoId'] for item in response.get('items', [])]
+        video_ids[channel_name] = []   #iniatialising emptey dictionary array for channel name
+     
+        for item in response.get('items',[]): #looping through items in youtube response
+         video_id = item.get('contentDetails', {}).get('videoId') # accessing contentdETAILS AND then egtting video id from it
+         video_ids[channel_name].append(video_id) #appending video id to specific channel name in dictionary, ie  'Channel A': ['abc123', 'def456'],
+
     return video_ids
 
 def get_video_stats(youtube, video_ids):
@@ -49,7 +55,7 @@ def get_video_stats(youtube, video_ids):
     """
     video_info = []
     for channel_name, ids in video_ids.items():
-        for video_id in ids[:5]:
+        for video_id in ids:
             request = youtube.videos().list(
                 part="snippet,contentDetails,statistics",
                 id=video_id
